@@ -100,3 +100,4 @@ jobs:
           title: "Update translations"
           body: ''
           delete-branch: true
+          working-directory: ${{ inputs.gem_name  }}
