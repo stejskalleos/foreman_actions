@@ -53,6 +53,13 @@ jobs:
           [main]
           host = https://rest.api.transifex.com
           token = ${{ secrets.tx_token  }}
+
+          [o:foreman:p:foreman:r:${{ inputs.gem_name }}]
+          file_filter = locale/<lang>/${{ inputs.gem_name }}.edit.po
+          source_file = locale/${{ inputs.gem_name }}.pot
+          source_lang = en
+          type = PO
+          resource_name = ${{ inputs.gem_name }}
           EOF
 
       - name: Set up Ruby
@@ -60,7 +67,7 @@ jobs:
         with:
           ruby-version: "2.7"
           bundler-cache: true
-          working-directory: ${{ inputs.gem_name  }}
+          working-directory: ${{ inputs.gem_name }}
 
       - name: Set up Git
         run: |
@@ -75,8 +82,7 @@ jobs:
 
       - name: Cleanup before the PR
         run: |
-          rm -rf ".tx"
-          rm -rf "vendor"
+          git checkout -f
 
       - name: Open a PR
         uses: peter-evans/create-pull-request@v5
