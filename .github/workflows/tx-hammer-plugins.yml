@@ -14,8 +14,7 @@ on:
       gh_token:
         description: 'GitHub token with permissions to create a pull request'
         required: true
-# env:
-#   branch_name: "tx-${{ github.run_id }}"
+
 jobs:
   tx-update:
     runs-on: ubuntu-latest
@@ -68,35 +67,17 @@ jobs:
           git config user.name "Foreman Translation action"
           git config user.email "noreply@foreman.example.com"
 
-          #git checkout -b $branch_name
-          touch ~/.gitignore
-          echo ".tx/*" >> ~/.gitignore
-          echo "vendor/*" >> ~/.gitignore
-
-          git config --global core.excludesfile ~/.gitignore
-
       - name: Pull translations
         env:
           TX_TOKEN: ${{ secrets.tx_token  }}
         run: |
           bundle exec rake tx:update
 
-      # - name: Check for the changes
-      #   run: |
-      #     if ! [ -n "$(git diff ${{ github.ref_name }})" ]; then
-      #       echo '###'
-      #       echo '### No changes.'
-      #       echo '### Exiting ...'
-      #       echo '###'
-      #       exit 1
-      #     fi
+      - name: Cleanup before the PR
+        run: |
+          rm -rf ".tx"
+          rm -rf "vendor"
 
-      # - name: Push changes and create a pull request
-      #   run: |
-      #     git push --set-upstream origin $branch_name
-      #     gh pr create --title "Translations" --body "Updated translation files"
-        # env:
-        #   GH_TOKEN: ${{ secrets.gh_token }}
       - name: Open a PR
         uses: peter-evans/create-pull-request@v5
         with:
