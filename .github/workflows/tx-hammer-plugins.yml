@@ -36,15 +36,15 @@ jobs:
         with:
           path: ${{ inputs.gem_name  }}
 
-      # - name: Install Transifex dependencies
-      #   run: |
-      #     sudo apt-get -y install gettext
+      - name: Install Transifex dependencies
+        run: |
+          sudo apt-get -y install gettext
 
-      # - name: "Install Transifex"
-      #   run: |
-      #     curl -o- https://raw.githubusercontent.com/transifex/cli/master/install.sh | bash
-      #     sudo mv tx /usr/local/bin/
-      #     sudo chown -R runner:runner /usr/local/bin
+      - name: "Install Transifex"
+        run: |
+          curl -o- https://raw.githubusercontent.com/transifex/cli/master/install.sh | bash
+          sudo mv tx /usr/local/bin/
+          sudo chown -R runner:runner /usr/local/bin
 
       - name: Configure plugin
         run: |
@@ -56,37 +56,37 @@ jobs:
           token = ${{ secrets.tx_token  }}
           EOF
 
-      # - name: Set up Ruby
-      #   uses: ruby/setup-ruby@v1
-      #   with:
-      #     ruby-version: "2.7"
-      #     bundler-cache: true
-      #     working-directory: ${{ inputs.gem_name  }}
-      # - name: Set up Git
-      #   run: |
-      #     git config user.name "Foreman Translation action"
-      #     git config user.email "noreply@foreman.example.com"
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "2.7"
+          bundler-cache: true
+          working-directory: ${{ inputs.gem_name  }}
+      - name: Set up Git
+        run: |
+          git config user.name "Foreman Translation action"
+          git config user.email "noreply@foreman.example.com"
 
-      #     git checkout -b $branch_name
+          git checkout -b $branch_name
 
-      #     echo ".tx/*" >> .gitignore
-      #     echo "vendor/*" >> .gitignore
+          echo ".tx/*" >> .gitignore
+          echo "vendor/*" >> .gitignore
 
-      # - name: Pull translations
-      #   env:
-      #     TX_TOKEN: ${{ secrets.tx_token  }}
-      #   run: |
-      #     bundle exec rake tx:update
+      - name: Pull translations
+        env:
+          TX_TOKEN: ${{ secrets.tx_token  }}
+        run: |
+          bundle exec rake tx:update
 
-      # - name: Check for the changes
-      #   run: |
-      #     if ! [ -n "$(git diff ${{ github.ref_name }})" ]; then
-      #       echo '###'
-      #       echo '### No changes.'
-      #       echo '### Exiting ...'
-      #       echo '###'
-      #       exit 1
-      #     fi
+      - name: Check for the changes
+        run: |
+          if ! [ -n "$(git diff ${{ github.ref_name }})" ]; then
+            echo '###'
+            echo '### No changes.'
+            echo '### Exiting ...'
+            echo '###'
+            exit 1
+          fi
 
       # - name: Push changes and create a pull request
       #   run: |
@@ -100,6 +100,6 @@ jobs:
           branch: "$branch_name"
           title: "Update translations"
           body: ''
-          commit: 'My super message'
+          commit-message: 'My super message'
           delete-branch: true
           path: ${{ inputs.gem_name  }}
