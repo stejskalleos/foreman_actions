@@ -14,8 +14,8 @@ on:
       gh_token:
         description: 'GitHub token with permissions to create a pull request'
         required: true
-env:
-  branch_name: "tx-${{ github.run_id }}"
+# env:
+#   branch_name: "tx-${{ github.run_id }}"
 jobs:
   tx-update:
     runs-on: ubuntu-latest
@@ -62,15 +62,18 @@ jobs:
           ruby-version: "2.7"
           bundler-cache: true
           working-directory: ${{ inputs.gem_name  }}
+
       - name: Set up Git
         run: |
           git config user.name "Foreman Translation action"
           git config user.email "noreply@foreman.example.com"
 
-          git checkout -b $branch_name
+          #git checkout -b $branch_name
+          touch ~/.gitignore
+          echo ".tx/*" >> ~/.gitignore
+          echo "vendor/*" >> ~/.gitignore
 
-          echo ".tx/*" >> .gitignore
-          echo "vendor/*" >> .gitignore
+          git config --global core.excludesfile ~/.gitignore
 
       - name: Pull translations
         env:
@@ -78,15 +81,15 @@ jobs:
         run: |
           bundle exec rake tx:update
 
-      - name: Check for the changes
-        run: |
-          if ! [ -n "$(git diff ${{ github.ref_name }})" ]; then
-            echo '###'
-            echo '### No changes.'
-            echo '### Exiting ...'
-            echo '###'
-            exit 1
-          fi
+      # - name: Check for the changes
+      #   run: |
+      #     if ! [ -n "$(git diff ${{ github.ref_name }})" ]; then
+      #       echo '###'
+      #       echo '### No changes.'
+      #       echo '### Exiting ...'
+      #       echo '###'
+      #       exit 1
+      #     fi
 
       # - name: Push changes and create a pull request
       #   run: |
@@ -97,9 +100,9 @@ jobs:
       - name: Open a PR
         uses: peter-evans/create-pull-request@v5
         with:
-          branch: "$branch_name"
+          branch: "tx-pull"
+          branch-suffix: "timestamp"
           title: "Update translations"
           body: ''
-          commit-message: 'My super message'
           delete-branch: true
           path: ${{ inputs.gem_name  }}
