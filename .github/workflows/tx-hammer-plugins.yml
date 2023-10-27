@@ -3,8 +3,8 @@ name: Translations
 on:
   workflow_call:
     inputs:
-      plugin_name:
-        description: 'Name of the Hammer plugin. (Not the repository name)'
+      gem_name:
+        description: 'Name of the Gem'
         required: true
         type: 'string'
     secrets:
@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ${{ inputs.plugin_name  }}
+        working-directory: ${{ inputs.gem_name  }}
 
     steps:
       - name: Get hammer-cli
@@ -34,7 +34,7 @@ jobs:
       - name: Get ${{ github.repository }}
         uses: actions/checkout@v4
         with:
-          path: ${{ inputs.plugin_name  }}
+          path: ${{ inputs.gem_name  }}
       - name: Install Transifex dependencies
         run: |
           sudo apt-get -y install gettext
@@ -49,16 +49,18 @@ jobs:
         run: |
           echo "gemspec path: '../hammer-cli', name: 'hammer_cli'" > Gemfile.local.rb
           mkdir -p ./.tx
-          echo "[main]" > ./.tx/config
-          echo "host = https://rest.api.transifex.com" >> ./.tx/config
-          echo "token = ${{ secrets.tx_token  }}" >> ./.tx/config
+          cat > ./.tx/config <<EOF
+          [main]
+          host = https://rest.api.transifex.com
+          token = ${{ secrets.tx_token  }}
+          EOF
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: "2.7"
           bundler-cache: true
-          working-directory: ${{ inputs.plugin_name  }}
+          working-directory: ${{ inputs.gem_name  }}
       - name: Set up Git
         run: |
           git config user.name "Foreman Translation action"
@@ -85,9 +87,16 @@ jobs:
             exit 1
           fi
 
-      - name: Push changes and create a pull request
-        run: |
-          git push --set-upstream origin $branch_name
-          gh pr create --title "Translations" --body "Updated translation files"
+      # - name: Push changes and create a pull request
+      #   run: |
+      #     git push --set-upstream origin $branch_name
+      #     gh pr create --title "Translations" --body "Updated translation files"
         env:
           GH_TOKEN: ${{ secrets.gh_token }}
+      - name: Open a PR
+        uses: peter-evans/create-pull-request@v5
+        with:
+          branch: "$branch_name"
+          title: "Update translations"
+          body: ''
+          delete-branch: true
