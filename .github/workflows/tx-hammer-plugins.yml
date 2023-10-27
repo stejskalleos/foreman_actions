@@ -83,6 +83,7 @@ jobs:
       - name: Cleanup before the PR
         run: |
           git checkout -f
+          rm -rf vendor
 
       - name: Open a PR
         uses: peter-evans/create-pull-request@v5
